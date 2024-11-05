@@ -12,6 +12,7 @@
   - 可配置的工作池大小
 - HTTP API 接口
   - RESTful API 设计
+  - Token 认证保护
   - JSON 格式数据交互
 - 健康检查
   - 定时健康检查
