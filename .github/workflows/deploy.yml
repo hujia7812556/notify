@@ -7,7 +7,7 @@ on:
 
 env:
   APP_NAME: notify
-  GO_VERSION: '1.21'
+  GO_VERSION: '1.23'
 
 jobs:
   build-and-deploy:
