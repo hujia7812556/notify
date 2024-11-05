@@ -1,6 +1,7 @@
 package server
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"net/http"
 	"time"
@@ -59,31 +60,40 @@ func New(config config.ServerConfig, dispatcher *dispatcher.Dispatcher) *Server 
 	}
 }
 
-func (s *Server) Start() error {
-	// 注册路由
-	s.registerRoutes()
+// authMiddleware 验证请求的 token
+func (s *Server) authMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.GetHeader("X-API-Token")
+		if token == "" {
+			logger.Warn("Missing API token")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "Missing API token",
+			})
+			return
+		}
 
-	// 启动服务器
-	addr := fmt.Sprintf(":%d", s.config.Port)
-	srv := &http.Server{
-		Addr:         addr,
-		Handler:      s.engine,
-		ReadTimeout:  s.config.ReadTimeout,
-		WriteTimeout: s.config.WriteTimeout,
+		// 使用 subtle.ConstantTimeCompare 进行安全的字符串比较
+		if subtle.ConstantTimeCompare([]byte(token), []byte(s.config.Token)) != 1 {
+			logger.Warn("Invalid API token")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "Invalid API token",
+			})
+			return
+		}
+
+		c.Next()
 	}
-
-	return srv.ListenAndServe()
 }
 
 func (s *Server) registerRoutes() {
 	// API 版本分组
 	v1 := s.engine.Group("/api/v1")
 	{
-		// 消息通知接口
-		v1.POST("/notify", s.handleNotify)
-
-		// 健康检查接口
+		// 健康检查接口不需要验证
 		v1.GET("/health", s.handleHealth)
+
+		// notify 接口需要验证
+		v1.POST("/notify", s.authMiddleware(), s.handleNotify)
 	}
 }
 
@@ -116,4 +126,20 @@ func (s *Server) handleHealth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 	})
+}
+
+func (s *Server) Start() error {
+	// 注册路由
+	s.registerRoutes()
+
+	// 启动服务器
+	addr := fmt.Sprintf(":%d", s.config.Port)
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      s.engine,
+		ReadTimeout:  s.config.ReadTimeout,
+		WriteTimeout: s.config.WriteTimeout,
+	}
+
+	return srv.ListenAndServe()
 }

@@ -36,6 +36,7 @@ jobs:
           mode: "release"
           read_timeout: 5s
           write_timeout: 10s
+          token: "${{ secrets.API_TOKEN }}"
 
         dispatcher:
           buffer_size: 50

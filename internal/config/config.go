@@ -21,6 +21,7 @@ type ServerConfig struct {
 	Mode         string        `mapstructure:"mode"`
 	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout time.Duration `mapstructure:"write_timeout"`
+	Token        string        `mapstructure:"token"`
 }
 
 type DispatcherConfig struct {
