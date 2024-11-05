@@ -82,8 +82,8 @@ jobs:
           sudo supervisorctl stop notify || true
           
           # 替换 supervisor 配置中的变量
-          sudo sed -i "s|\$SERVER_TARGET|${{ secrets.SERVER_TARGET }}|g" ${{ secrets.SERVER_TARGET }}/notify.supervisor.conf
-          sudo mv ${{ secrets.SERVER_TARGET }}/notify.supervisor.conf /etc/supervisor/conf.d/
+          sudo sed -i "s|\$SERVER_TARGET|${{ secrets.SERVER_TARGET }}|g" ${{ secrets.SERVER_TARGET }}/deploy/notify.supervisor.conf
+          sudo mv ${{ secrets.SERVER_TARGET }}/deploy/notify.supervisor.conf /etc/supervisor/conf.d/
           
           # 重新加载 supervisor 配置并启动服务
           sudo supervisorctl reread
