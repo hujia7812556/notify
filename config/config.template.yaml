@@ -18,21 +18,13 @@ wechat:
     topic_ids:              # 主题ID列表
       - ""                  # 主题ID
     qps: 2                  # 每秒最大请求数
-
-# 钉钉配置
-dingtalk:
-  access_token: ""          # 钉钉机器人的access_token，创建机器人后获取
-  secret: ""                # 钉钉机器人的加签密钥，启用加签后获取
+    api_url: "https://wxpusher.zjiecode.com/api/send/message"  # WxPusher的API地址
 
 # 日志配置
 log:
   level: "info"            # 日志级别：debug, info, warn, error
   format: "json"           # 日志格式：json, console
-  output: "stdout"         # 默认输出位置
-  debug:
-    output: "stdout"       # debug模式下的输出位置
-  release:
-    output: "/var/log/notify/app.log"  # release模式下的输出位置
+  output: "stdout"         # 日志输出位置：stdout 或文件路径
 
 # 健康检查配置
 healthcheck:

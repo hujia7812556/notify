@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// 初始化日志
-	if err := logger.Init(cfg.Server.Mode, cfg.Log); err != nil {
+	if err := logger.Init(cfg.Log); err != nil {
 		log.Fatalf("Failed to initialize logger: %v", err)
 	}
 

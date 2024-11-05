@@ -60,7 +60,7 @@ func (h *HealthChecker) run() {
 	}
 
 	logger.Info("Health check scheduled",
-		zap.Time("next_check", next))
+		zap.String("next_check", next.Format("2006-01-02 15:04:05")))
 
 	timer := time.NewTimer(time.Until(next))
 	defer timer.Stop()
@@ -78,7 +78,7 @@ func (h *HealthChecker) run() {
 			timer.Reset(time.Until(next))
 
 			logger.Info("Next health check scheduled",
-				zap.Time("next_check", next))
+				zap.String("next_check", next.Format("2006-01-02 15:04:05")))
 		}
 	}
 }
@@ -102,5 +102,5 @@ func (h *HealthChecker) check() {
 	}
 
 	logger.Info("Health check completed successfully",
-		zap.Time("check_time", time.Now()))
+		zap.String("check_time", time.Now().Format("2006-01-02 15:04:05")))
 }

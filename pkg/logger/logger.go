@@ -1,30 +1,20 @@
 package logger
 
 import (
-	"notify/pkg/types"
-
 	"go.uber.org/zap"
 )
 
+// LogConfig 日志配置结构体
+type LogConfig struct {
+	Level  string `mapstructure:"level"`
+	Format string `mapstructure:"format"`
+	Output string `mapstructure:"output"`
+}
+
 var log *zap.Logger
 
-func Init(mode string, cfg types.LogConfig) error {
+func Init(cfg LogConfig) error {
 	config := zap.NewProductionConfig()
-
-	// 根据运行模式选择输出
-	if mode == "debug" {
-		if cfg.Debug.Output != "" {
-			config.OutputPaths = []string{cfg.Debug.Output}
-		} else {
-			config.OutputPaths = []string{"stdout"}
-		}
-	} else {
-		if cfg.Release.Output != "" {
-			config.OutputPaths = []string{cfg.Release.Output}
-		} else {
-			config.OutputPaths = []string{cfg.Output}
-		}
-	}
 
 	// 设置日志级别
 	switch cfg.Level {
@@ -43,6 +33,13 @@ func Init(mode string, cfg types.LogConfig) error {
 		config.Encoding = "json"
 	} else {
 		config.Encoding = "console"
+	}
+
+	// 设置输出
+	if cfg.Output != "" {
+		config.OutputPaths = []string{cfg.Output}
+	} else {
+		config.OutputPaths = []string{"stdout"}
 	}
 
 	var err error

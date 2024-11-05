@@ -7,7 +7,7 @@ on:
 
 env:
   APP_NAME: notify
-  GO_VERSION: '1.23'
+  GO_VERSION: '1.21'
 
 jobs:
   build-and-deploy:
@@ -46,17 +46,14 @@ jobs:
           wxpusher:
             app_token: "${{ secrets.WXPUSHER_APP_TOKEN }}"
             topic_ids:
-              - "${{ secrets.WXPUSHER_TOPIC_ID }}"
+              - ${{ secrets.WXPUSHER_TOPIC_ID }}
             qps: 2
+            api_url: "https://wxpusher.zjiecode.com/api/send/message"
 
         log:
           level: "info"
           format: "json"
-          output: "${{ secrets.SERVER_TARGET }}/logs/notify.log"
-          debug:
-            output: "stdout"
-          release:
-            output: "${{ secrets.SERVER_TARGET }}/logs/notify.log"
+          output: "stdout"
 
         healthcheck:
           enabled: true
@@ -70,11 +67,11 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USERNAME }}
         key: ${{ secrets.SERVER_SSH_KEY }}
-        source: "bin/${{ env.APP_NAME }},etc/config.yaml,deploy/notify.service,deploy/notify.logrotate"
+        source: "bin/${{ env.APP_NAME }},etc/config.yaml,deploy/notify.supervisor.conf"
         target: "${{ secrets.SERVER_TARGET }}"
         strip_components: 1
 
-    - name: Setup service and logrotate
+    - name: Setup service
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.SERVER_HOST }}
@@ -82,29 +79,16 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
           # 停止服务
-          sudo systemctl stop notify || true
+          sudo supervisorctl stop notify || true
           
-          # 创建必要的目录
-          sudo mkdir -p /usr/local/bin /etc/notify ${{ secrets.SERVER_TARGET }}/logs
+          # 替换 supervisor 配置中的变量
+          sudo sed -i "s|\$SERVER_TARGET|${{ secrets.SERVER_TARGET }}|g" ${{ secrets.SERVER_TARGET }}/notify.supervisor.conf
+          sudo mv ${{ secrets.SERVER_TARGET }}/notify.supervisor.conf /etc/supervisor/conf.d/
           
-          # 移动文件到正确位置
-          sudo mv ${{ secrets.SERVER_TARGET }}/${{ env.APP_NAME }} /usr/local/bin/
-          sudo mv ${{ secrets.SERVER_TARGET }}/config.yaml /etc/notify/
-          sudo mv ${{ secrets.SERVER_TARGET }}/notify.service /etc/systemd/system/
-          sudo mv ${{ secrets.SERVER_TARGET }}/notify.logrotate /etc/logrotate.d/notify
+          # 重新加载 supervisor 配置并启动服务
+          sudo supervisorctl reread
+          sudo supervisorctl update
+          sudo supervisorctl start notify
           
-          # 替换 logrotate 配置中的变量
-          sudo sed -i "s|\$SERVER_TARGET|${{ secrets.SERVER_TARGET }}|g" /etc/logrotate.d/notify
-          
-          # 设置权限
-          sudo chown -R notify:notify /etc/notify ${{ secrets.SERVER_TARGET }}/logs
-          sudo chmod 644 /etc/logrotate.d/notify
-          sudo chmod 755 /usr/local/bin/${{ env.APP_NAME }}
-          
-          # 重新加载并启动服务
-          sudo systemctl daemon-reload
-          sudo systemctl enable notify
-          sudo systemctl restart notify
-          
-          # 测试 logrotate 配置
-          sudo logrotate -d /etc/logrotate.d/notify
+          # 查看服务状态
+          sudo supervisorctl status notify

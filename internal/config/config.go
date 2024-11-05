@@ -1,7 +1,7 @@
 package config
 
 import (
-	"notify/pkg/types"
+	"notify/pkg/logger"
 	"time"
 
 	"github.com/spf13/viper"
@@ -12,7 +12,7 @@ type Config struct {
 	Dispatcher  DispatcherConfig
 	WeChat      WeChatConfig
 	DingTalk    DingTalkConfig
-	Log         types.LogConfig
+	Log         logger.LogConfig
 	HealthCheck HealthCheckConfig
 }
 
@@ -41,9 +41,10 @@ type WeComConfig struct {
 }
 
 type WxPusherConfig struct {
-	AppToken string   `mapstructure:"app_token"`
-	TopicIDs []string `mapstructure:"topic_ids"`
-	QPS      int      `mapstructure:"qps"`
+	AppToken string  `mapstructure:"app_token"`
+	TopicIDs []int64 `mapstructure:"topic_ids"`
+	QPS      int     `mapstructure:"qps"`
+	ApiUrl   string  `mapstructure:"api_url"`
 }
 
 type DingTalkConfig struct {

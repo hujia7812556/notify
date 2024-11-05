@@ -10,22 +10,19 @@ import (
 
 	"notify/internal/config"
 	"notify/pkg/logger"
-	"notify/pkg/ratelimit"
 
 	"go.uber.org/zap"
 )
 
 type WxPusherSender struct {
-	config      config.WxPusherConfig
-	client      *http.Client
-	rateLimiter ratelimit.RateLimiter
+	config config.WxPusherConfig
+	client *http.Client
 }
 
 func NewWxPusherSender(config config.WxPusherConfig) *WxPusherSender {
 	return &WxPusherSender{
-		config:      config,
-		client:      &http.Client{Timeout: 10 * time.Second},
-		rateLimiter: ratelimit.NewTokenBucket(config.QPS),
+		config: config,
+		client: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
@@ -34,17 +31,12 @@ func (s *WxPusherSender) Type() WeChatSenderType {
 }
 
 func (s *WxPusherSender) Send(ctx context.Context, content string, summary string, extra map[string]any) error {
-	// 等待令牌
-	if err := s.rateLimiter.Wait(ctx); err != nil {
-		return fmt.Errorf("rate limit wait failed: %w", err)
-	}
-
 	msg := struct {
 		AppToken    string   `json:"appToken"`
 		Content     string   `json:"content"`
 		Summary     string   `json:"summary,omitempty"`
 		ContentType int      `json:"contentType"`
-		TopicIds    []string `json:"topicIds,omitempty"`
+		TopicIds    []int64  `json:"topicIds,omitempty"`
 		UIds        []string `json:"uids,omitempty"`
 	}{
 		AppToken:    s.config.AppToken,
@@ -64,7 +56,8 @@ func (s *WxPusherSender) Send(ctx context.Context, content string, summary strin
 		return fmt.Errorf("marshal message failed: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", "http://wxpusher.zjiecode.com/api/send/message", bytes.NewReader(body))
+	// 使用配置的 API 地址
+	req, err := http.NewRequestWithContext(ctx, "POST", s.config.ApiUrl, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("create request failed: %w", err)
 	}
@@ -90,7 +83,7 @@ func (s *WxPusherSender) Send(ctx context.Context, content string, summary strin
 	}
 
 	logger.Info("WxPusher message sent successfully",
-		zap.Strings("topic_ids", s.config.TopicIDs))
+		zap.Int64s("topic_ids", s.config.TopicIDs))
 
 	return nil
 }
