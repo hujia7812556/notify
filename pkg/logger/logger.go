@@ -1,7 +1,10 @@
 package logger
 
 import (
+	"time"
+
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // LogConfig 日志配置结构体
@@ -15,6 +18,11 @@ var log *zap.Logger
 
 func Init(cfg LogConfig) error {
 	config := zap.NewProductionConfig()
+
+	// 设置时间格式
+	config.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Format("2006-01-02 15:04:05"))
+	}
 
 	// 设置日志级别
 	switch cfg.Level {

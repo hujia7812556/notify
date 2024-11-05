@@ -81,6 +81,13 @@ jobs:
           # 停止服务
           sudo supervisorctl stop notify || true
           
+          # 检查并创建日志文件
+          if [ ! -f "/var/log/notify.log" ]; then
+            sudo touch /var/log/notify.log
+            sudo chown ${{ secrets.SERVER_USERNAME }}:${{ secrets.SERVER_USERNAME }} /var/log/notify.log
+            sudo chmod 644 /var/log/notify.log
+          fi
+          
           # 替换 supervisor 配置中的变量
           sudo sed -i "s|\$SERVER_TARGET|${{ secrets.SERVER_TARGET }}|g" ${{ secrets.SERVER_TARGET }}/deploy/notify.supervisor.conf
           sudo sed -i "s|\$SERVER_USERNAME|${{ secrets.SERVER_USERNAME }}|g" ${{ secrets.SERVER_TARGET }}/deploy/notify.supervisor.conf
