@@ -153,3 +153,9 @@ notify/
 ## License
 
 MIT License
+
+## API 文档
+
+### 认证方式
+
+所有 `/api/v1/notify` 接口的调用都需要在请求头中携带 token：
