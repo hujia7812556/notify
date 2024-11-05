@@ -1,0 +1,41 @@
+# 服务器配置
+server:
+  port: 8080                # HTTP服务端口号
+  mode: "debug"             # 运行模式：debug（调试模式）, release（生产模式）
+  read_timeout: 5s          # HTTP请求读取超时时间
+  write_timeout: 10s        # HTTP响应写入超时时间
+
+# 消息分发器配置
+dispatcher:
+  buffer_size: 50           # 消息缓冲区大小
+  worker_pool_size: 2       # 工作协程数量
+
+# 微信配置
+wechat:
+  sender_type: "wxpusher"   # 发送方式：wxpusher
+  wxpusher:
+    app_token: ""           # WxPusher的应用Token
+    topic_ids:              # 主题ID列表
+      - ""                  # 主题ID
+    qps: 2                  # 每秒最大请求数
+
+# 钉钉配置
+dingtalk:
+  access_token: ""          # 钉钉机器人的access_token，创建机器人后获取
+  secret: ""                # 钉钉机器人的加签密钥，启用加签后获取
+
+# 日志配置
+log:
+  level: "info"            # 日志级别：debug, info, warn, error
+  format: "json"           # 日志格式：json, console
+  output: "stdout"         # 默认输出位置
+  debug:
+    output: "stdout"       # debug模式下的输出位置
+  release:
+    output: "/var/log/notify/app.log"  # release模式下的输出位置
+
+# 健康检查配置
+healthcheck:
+  enabled: true            # 是否启用健康检查
+  check_time: "08:00"      # 每日检查时间
+  timeout: 10s             # 检查超时时间

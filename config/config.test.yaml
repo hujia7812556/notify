@@ -1,0 +1,29 @@
+server:
+  port: 8081  # 使用不同的端口避免冲突
+  mode: "debug"
+  read_timeout: 5s
+  write_timeout: 10s
+
+dispatcher:
+  buffer_size: 100
+  worker_pool_size: 10
+
+wechat:
+  sender_type: "wxpusher"
+  wecom:
+    corp_id: "test_corp_id"
+    agent_id: "test_agent_id"
+    app_secret: "test_app_secret"
+  wxpusher:
+    app_token: "AT_xxx"
+    topic_ids: 
+      - "1234"
+
+dingtalk:
+  access_token: "test_access_token"
+  secret: "test_secret"
+
+log:
+  level: "debug"
+  format: "console"
+  output: "stdout" 
